@@ -1,0 +1,136 @@
+Unit Testing
+
+Unit testing is the process of testing a specific component.
+Mocks the dependencies of the application.
+
+Integration Testing
+
+Is then testing how these components integrate with one another.
+Find any issues with this.
+
+Therefore Unit Testing will test just one layer at a time.
+Integration testing will test the whole project as a whole.
+
+Dependencies
+
+Most of the test bonanaza stuff we use is included in
+spring-starter-test in the pom.xml
+
+JUnit 4, Hamcrest, AssertJ, Mockito and JsonNassert and JsonPath
+
+Hamcrest --> means of writing tests to check if objects match one another
+JsonNassert --> Complex json checks and validations
+Mockito --> enables the creation of "Mock" objects for testing
+JsonPath --> helps us query JSON ibjects
+AssertJ --> assertion library
+
+Tests in springboot can be written in a bunch of ways
+
+1.
+@RunWith(SpringRunner.class) --> JUnit 4
+
+2.
+@RunWith(MockitoJUnitRunner.class) --> JUnit 4 with Mockito
+
+Basically initilisaes any objects with Mock before hand.
+
+3.
+@ExtendWith(SpringExtension.class)
+This basically integrates the SpringTest Context into JUnit 5 programmign model
+
+4.
+@ExtendWith(MockitoExtension.class)
+Equivalent to 2. but in JUnit 5.
+
+SpringBoot Test annotations
+
+5. @SpringBootTest
+
+Used for writing Integration TESTS
+
+Basically does a number of hosuekeeping under the bonnet.
+Adds the dependencies and configurations and looks where to scan.
+Loads all the application but can limit this with the classes = {X, Y, Z}
+
+So fully starts the integration server and completely initlialises the server context
+Can then inject the dependencies in with the @Autowired annotation
+Can create test specific beans in @Configuration or @TestConfiguration
+
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+
+@LocalServerPort
+private int somePort;
+
+@Autowired
+private testRestTemplate restTemplate;
+
+6. @WebMvcTest
+Used for Spring MVC -- ( Model View Controller ) Tests
+
+The full configuration of the application is therefore put on hold
+only the relevant confifuration for the test
+
+Can only intiliase one controller with the @WebMvcTest(SomeController.class)
+
+7. @WebFluxTest --> test webFluxEndpoints using this
+Disables full auto confiuguration. Only configures the controller relevant to the tests
+
+@WebvMvcTest
+This annotation is used to create to disable full autoconfiguration of the project and
+only to configure relevant to the MVC tests UNIT TESTING.
+
+MockMvc (somewhere between both unit and integration testing)
+Helps to test the controllers by explicitly starting the servelet container. Used to perform requests etc.
+
+@MockBean
+
+What is the application context
+
+This basically adds spring beans or MOCK beans to the applicationcontext which is like the interface for gettign
+beans under the bonnet.
+We can basically mock an object and therefore record and verify behaviour under the bonnet with it.
+By mimmicking its behaviours and writing expected responses etc.
+
+Use @Mock when there are no under the bonnet springboot dependencies (its quicker)
+
+
+
+EXCEPTIONS
+
+To create custom runtime exceptions extend RunTimeException and then override the constructor with a string message
+ensure the application.yaml has a server.error.include-message=always to see thebespoke error message
+
+To specify the error number use @ResponseStatus(HttpStatus.NOT_FOUND)
+
+Can implement a standard error response / structure!
+
+Create a standard class right and name it like ExceptionResponse create the
+desired fields you would want in the error message and create some getters and
+a bespoke constructor for those fields
+
+Then we need something to handle these requests
+To handle the requests create a EXCEPTIONHANDLER
+
+Decorate the constructor handler with
+@ControllerAdvice
+This annotation basically tells the controller to do this for ALL controllers in the
+project
+@RestController as its a rest controller ie it is returning a json response
+
+this handler class must extends the ResponseEntityExceptionHandler
+
+and then create some bespoke methods
+methods must be annotated with @ExceptionHandler(Exception.class)
+
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<ExceptionResponse> handleAllException(Exception ex, WebRequest request) throws Exception {
+        ExceptionResponse exceptionResponse =
+        new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity<ExceptionResponse>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    Can then do this for each of your custom Exceptions
+
+ResponseEntityExceptionHandler can be used to provide a default format for Exceptions
+This may be us
